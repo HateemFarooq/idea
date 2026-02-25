@@ -18,7 +18,7 @@ class IdeaSeeder extends Seeder
         // -------------------------
         $ideas = [
             [
-                'user_id' => 1,
+                'user_id' => 2,
                 'title' => 'AI Attendance System',
                 'description' => 'Build face recognition attendance system',
                 'status' => 'pending',
@@ -28,7 +28,7 @@ class IdeaSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'user_id' => 1,
+                'user_id' => 2,
                 'title' => 'Laravel Booking App',
                 'description' => 'Online catering booking platform',
                 'status' => 'pending',
