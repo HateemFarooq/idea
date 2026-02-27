@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
-use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
@@ -14,6 +15,7 @@ class AuthController extends Controller
     {
         return view('Pages.home');
     }
+
     public function showLogin()
     {
         return view('Auth.login');
@@ -33,6 +35,7 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
+
             return redirect()->route('ideas')->with('success', 'Log in Successfully');
         }
 
@@ -53,9 +56,10 @@ class AuthController extends Controller
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
-            ]);
+        ]);
 
         Auth::login($user);
+
         return redirect()->route('ideas')->with('success', 'Registered Successfully and logged in');
     }
 

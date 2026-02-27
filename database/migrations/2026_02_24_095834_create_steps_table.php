@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('steps', function (Blueprint $table) {
             $table->id();
             $table->foreignId('idea_id')->constrained()->onDelete('cascade');
-            $table->string('description'); 
-            $table->boolean('completed'); 
+            $table->string('description');
+            $table->boolean('completed');
             $table->timestamps();
         });
     }
