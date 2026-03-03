@@ -73,6 +73,45 @@
                     </p>
                 </div>
 
+                <!-- Actionable Steps -->
+@if($idea->steps->isNotEmpty())
+    <div class="mt-10">
+        <h2 class="text-2xl font-bold text-white mb-4">Actionable Steps</h2>
+        <div class="space-y-3">
+            @foreach($idea->steps as $step)
+                <div class="flex items-center gap-3 p-3 rounded-xl border border-white/10 cursor-pointer transition-all hover:bg-white/5 step-row" 
+                     data-step-id="{{ $step->id }}">
+                    <div class="w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors
+                                @if($step->completed) bg-emerald-500 border-emerald-500 @else border-white/20 @endif">
+                        @if($step->completed)
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        @endif
+                    </div>
+                    <span class="text-gray-400 @if($step->completed) line-through text-gray-500 @endif">{{ $step->description }}</span>
+                </div>
+            @endforeach
+        </div>
+    </div>
+@endif
+
+<!-- Links Section -->
+@if(!empty($idea->links))
+    <div class="mt-10">
+        <h2 class="text-2xl font-bold text-white mb-4">Links</h2>
+        <ul class="space-y-2">
+            @foreach($idea->links as $link)
+                <li>
+                    <a href="{{ $link }}" target="_blank" class="text-blue-400 hover:text-blue-500 underline break-all">
+                        {{ $link }}
+                    </a>
+                </li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
                 <div class="mt-12 pt-8 border-t border-white/5 flex flex-wrap items-center gap-6 text-xs font-medium uppercase tracking-widest text-gray-500">
                     <div class="flex items-center gap-2">
                         <span class="text-white/20">Posted</span>
@@ -145,6 +184,47 @@
             modal.classList.remove('flex');
             document.body.style.overflow = 'auto'; // Re-enable scroll
         }
-    </script>
+
+    document.querySelectorAll('.step-row').forEach(row => {
+        row.addEventListener('click', async function () {
+            const stepId = this.dataset.stepId;
+
+            // Toggle visually
+            const isCompleted = this.querySelector('div').classList.contains('bg-emerald-500');
+            
+            const circle = this.querySelector('div');
+            const text = this.querySelector('span');
+
+            if (isCompleted) {
+                circle.classList.remove('bg-emerald-500', 'border-emerald-500');
+                text.classList.remove('line-through', 'text-gray-500');
+                circle.innerHTML = '';
+            } else {
+                circle.classList.add('bg-emerald-500', 'border-emerald-500');
+                text.classList.add('line-through', 'text-gray-500');
+                circle.innerHTML = `
+                    <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                    </svg>
+                `;
+            }
+
+            // Send request to update step
+            try {
+                await fetch(`/steps/${stepId}/toggle`, {
+                    method: 'PATCH',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ completed: !isCompleted })
+                });
+            } catch (err) {
+                console.error('Failed to update step', err);
+            }
+        });
+    });
+</script>
+    
 
 </x-nav>

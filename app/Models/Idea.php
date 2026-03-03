@@ -34,6 +34,7 @@ class Idea extends Model
      */
     protected $casts = [
         'status' => IdeaStatus::class,
+        'links' => 'array',
     ];
 
     /**

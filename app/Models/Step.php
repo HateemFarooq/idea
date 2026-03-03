@@ -23,6 +23,10 @@ class Step extends Model
         'completed' => false,
     ];
 
+    protected $casts = [
+        'completed' => 'boolean',
+    ];
+
     /**
      * The idea this step belongs to
      */

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\IdeaController;
+use App\Http\Controllers\StepController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -17,5 +18,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/ideas', [IdeaController::class, 'index'])->name('ideas');
     Route::get('/ideas/{idea}', [IdeaController::class, 'show'])->name('ideas.show');
     Route::delete('/ideas/{idea}', [IdeaController::class, 'destroy'])->name('ideas.destroy');
+    Route::post('/ideas', [IdeaController::class, 'store'])->name('ideas.store');
+    Route::patch('/steps/{step}/toggle', [StepController::class, 'toggle'])->name('steps.toggle');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });

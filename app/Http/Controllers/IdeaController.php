@@ -8,6 +8,7 @@ use App\Enums\IdeaStatus;
 use App\Models\Idea;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rules\Enum;
 
 class IdeaController extends Controller
 {
@@ -18,7 +19,10 @@ class IdeaController extends Controller
         $filter = $request->get('status', 'all');
 
         // ✅ allowed filters
-        $allowed = ['all', 'pending', 'in progress', 'completed'];
+        $allowed = array_merge(
+            ['all'],
+            array_column(IdeaStatus::cases(), 'value')
+        );
 
         // 🚨 reject invalid status
         if (! in_array($filter, $allowed, true)) {
@@ -42,24 +46,62 @@ class IdeaController extends Controller
 
         return view('Pages.ideas', ['ideas' => $ideas, 'filter' => $filter, 'counts' => $counts]);
     }
+
     public function show(Idea $idea)
-{
-    // security: user can only view own idea
-    abort_if($idea->user_id !== Auth::id(), 403);
+    {
+        // security: user can only view own idea
+        abort_if($idea->user_id !== Auth::id(), 403);
 
-    return view('Pages.ideas_show', compact('idea'));
-}
+        $idea->load('steps');
 
-public function destroy(Idea $idea)
-{
-    abort_if($idea->user_id !== Auth::id(), 403);
+        return view('Pages.ideas_show', ['idea' => $idea]);
+    }
 
-    $idea->delete();
+    public function destroy(Idea $idea)
+    {
+        abort_if($idea->user_id !== Auth::id(), 403);
 
-    return redirect()
-        ->route('ideas')
-        ->with('success', 'Idea deleted successfully.');
-}
+        $idea->delete();
+
+        return redirect()
+            ->route('ideas')
+            ->with('success', 'Idea deleted successfully.');
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'status' => ['required', new Enum(IdeaStatus::class)],
+            'description' => ['nullable', 'string'],
+            'links' => ['nullable', 'array'],
+            'links.*' => ['nullable', 'url'],
+            'steps' => ['nullable', 'array'],
+            'steps.*' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $idea = Idea::create([
+            'user_id' => Auth::id(),
+            'title' => $validated['title'],
+            'status' => $validated['status'],
+            'description' => $validated['description'],
+            'links' => $validated['links'] ?? [],
+        ]);
+
+        // Save steps into steps table
+        if (! empty($validated['steps'])) {
+            foreach ($validated['steps'] as $stepDesc) {
+                $idea->steps()->create([
+                    'description' => $stepDesc,
+                    'completed' => false,
+                ]);
+            }
+        }
+
+        return redirect()
+            ->route('ideas')
+            ->with('success', 'Idea created successfully.');
+    }
 }
 
 // <!-- <?php
