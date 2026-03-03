@@ -66,7 +66,15 @@
                 <h1 class="mt-8 text-4xl md:text-5xl font-black text-white leading-[1.1] tracking-tight">
                     {{ $idea->title }}
                 </h1>
-
+{{-- Idea Image --}}
+@if(!empty($idea->image))
+    <div class="mt-8 overflow-hidden rounded-2xl border border-white/10">
+        <img 
+            src="{{ asset('storage/'.$idea->image) }}"
+            alt="{{ $idea->title }}"
+            class="w-full max-h-[420px] object-cover">
+    </div>
+@endif
                 <div class="mt-8 space-y-6">
                     <p class="text-lg text-gray-400 leading-relaxed font-light">
                         {{ $idea->description }}

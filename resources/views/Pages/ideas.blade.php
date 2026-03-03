@@ -77,6 +77,15 @@
                     <div class="group relative flex flex-col h-full rounded-[2rem] border border-white/[0.08] bg-[#0A0A0A] p-8 transition-all duration-500 hover:border-white/30 hover:shadow-[0_20px_50px_rgba(0,0,0,0.7)]">
                         <div class="absolute inset-0 rounded-[2rem] bg-gradient-to-br from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                         <div class="relative z-10 flex flex-col h-full">
+                            {{-- Idea Image --}}
+@if(!empty($idea->image))
+    <div class="mb-6 overflow-hidden rounded-xl border border-white/10">
+        <img 
+            src="{{ asset('storage/'.$idea->image) }}"
+            alt="{{ $idea->title }}"
+            class="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500">
+    </div>
+@endif
                             <div class="flex justify-between items-start mb-6">
                                 <span class="text-[10px] px-3 py-1 rounded-full border font-bold uppercase tracking-[0.15em] {{ $badgeClass }}">
                                     {{ $idea->status->value ?? $idea->status }}
@@ -145,7 +154,7 @@
                     hover:scrollbar-thumb-white/20 
                     scrollbar-thumb-rounded-full">
 
-            <form id="ideaForm" method="POST" action="{{ route('ideas.store') }}" class="space-y-6">
+            <form id="ideaForm" method="POST" action="{{ route('ideas.store') }}" enctype="multipart/form-data" class="space-y-6">
                 @csrf
 
                 <div>
@@ -173,6 +182,29 @@
                     <textarea name="description" rows="4" placeholder="Optional description..."
                               class="w-full rounded-xl bg-white/[0.03] border border-white/10 px-4 py-3 text-white focus:outline-none focus:border-white/30 resize-none">{{ old('description') }}</textarea>
                 </div>
+
+                <div>
+    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+        Image
+    </label>
+
+    <input 
+        type="file" 
+        name="image" 
+        id="imageInput"
+        accept="image/*"
+        class="w-full rounded-xl bg-white/[0.03] border border-white/10 px-4 py-3 text-white
+               focus:outline-none focus:border-white/30">
+
+    @error('image')
+        <p class="text-red-400 text-sm mt-2">{{ $message }}</p>
+    @enderror
+
+    <!-- Preview -->
+    <div id="imagePreviewWrapper" class="mt-4 hidden">
+        <img id="imagePreview" class="w-full h-48 object-cover rounded-xl border border-white/10">
+    </div>
+</div>
 
                 <!-- Steps -->
 <div>
@@ -261,6 +293,29 @@ document.addEventListener('click', function(e){
     if(e.target.classList.contains('remove-step')){
         e.target.closest('.step-row').remove();
     }
+});
+
+// Image preview
+const imageInput = document.getElementById('imageInput');
+const previewWrapper = document.getElementById('imagePreviewWrapper');
+const previewImage = document.getElementById('imagePreview');
+
+imageInput?.addEventListener('change', function () {
+    const file = this.files[0];
+
+    if (!file) {
+        previewWrapper.classList.add('hidden');
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+        previewImage.src = e.target.result;
+        previewWrapper.classList.remove('hidden');
+    };
+
+    reader.readAsDataURL(file);
 });
 
             @if ($errors->any()) openModal(); @endif

@@ -9,6 +9,8 @@ use App\Models\Idea;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Enum;
+use App\Models\User;
+use App\Notifications\IdeaNotification;
 
 class IdeaController extends Controller
 {
@@ -78,7 +80,13 @@ class IdeaController extends Controller
             'links.*' => ['nullable', 'url'],
             'steps' => ['nullable', 'array'],
             'steps.*' => ['nullable', 'string', 'max:255'],
+            'image' => ['nullable', 'image', 'max:2048'],
         ]);
+
+        $imagePath = null;
+
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('ideas', 'public');}
 
         $idea = Idea::create([
             'user_id' => Auth::id(),
@@ -86,6 +94,7 @@ class IdeaController extends Controller
             'status' => $validated['status'],
             'description' => $validated['description'],
             'links' => $validated['links'] ?? [],
+            'image' => $imagePath,
         ]);
 
         // Save steps into steps table
@@ -97,6 +106,7 @@ class IdeaController extends Controller
                 ]);
             }
         }
+        Auth::user()->notify(new IdeaNotification($idea));
 
         return redirect()
             ->route('ideas')
