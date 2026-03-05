@@ -1,14 +1,5 @@
 <x-nav title="Idea">
 
-    {{-- ✅ FLASH MESSAGE --}}
-    @if(session('success'))
-        <div class="mb-8 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-6 py-4 animate-in fade-in slide-in-from-top-4 duration-300">
-            <div class="flex items-center gap-3">
-                <div class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                <span class="text-sm font-medium">{{ session('success') }}</span>
-            </div>
-        </div>
-    @endif
 
     {{-- ================= ACTION BAR ================= --}}
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10">
@@ -21,9 +12,10 @@
 
         <div class="flex items-center gap-3">
             {{-- EDIT --}}
-            <button class="px-6 py-2.5 rounded-xl border border-white/5 bg-white/5 text-sm font-semibold text-gray-300 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all active:scale-95">
-                Edit Idea
-            </button>
+            <button onclick="openEditModal()"
+    class="px-6 py-2.5 rounded-xl border border-white/5 bg-white/5 text-sm font-semibold text-gray-300 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all active:scale-95">
+    Edit Idea
+</button>
 
             {{-- DELETE BUTTON --}}
             <button
@@ -87,7 +79,7 @@
         <h2 class="text-2xl font-bold text-white mb-4">Actionable Steps</h2>
         <div class="space-y-3">
             @foreach($idea->steps as $step)
-                <div class="flex items-center gap-3 p-3 rounded-xl border border-white/10 cursor-pointer transition-all hover:bg-white/5 step-row" 
+                <div class="flex items-center gap-3 p-3 rounded-xl border border-white/10 cursor-pointer transition-all hover:bg-white/5 view-step-row" 
                      data-step-id="{{ $step->id }}">
                     <div class="w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors
                                 @if($step->completed) bg-emerald-500 border-emerald-500 @else border-white/20 @endif">
@@ -135,6 +127,202 @@
             </div>
         </div>
     </div>
+
+
+    {{-- ================= EDIT MODAL ================= --}}
+<div id="editIdeaModal"
+     class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+
+    <div class="w-full max-w-lg rounded-[2rem] border border-white/10 bg-[#0A0A0A] shadow-2xl relative max-h-[90vh] flex flex-col">
+
+        {{-- Header --}}
+        <div class="p-8 pb-4">
+            <button onclick="closeEditModal()"
+                class="absolute top-6 right-6 text-gray-500 hover:text-white">✕</button>
+            <h2 class="text-2xl font-bold text-white">Edit Idea</h2>
+        </div>
+
+        {{-- Body --}}
+        <div class="flex-1 overflow-y-auto px-8 pb-8">
+
+            <form id="editIdeaForm"
+                  method="POST"
+                  action="{{ route('ideas.update', $idea) }}"
+                  enctype="multipart/form-data"
+                  class="space-y-6">
+
+                @csrf
+                @method('PUT')
+
+                {{-- Title --}}
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-2">Title *</label>
+                    <input type="text" name="title"
+       value="{{ old('$idea->title', $idea->title) }}"
+       class="w-full rounded-xl bg-white/[0.03] border border-white/10 px-4 py-3 text-white">
+@error('title')
+    <p class="text-red-400 text-sm mt-2">{{ $message }}</p>
+@enderror
+                </div>
+
+                {{-- Status --}}
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-2">Status *</label>
+                    <select name="status"
+                        class="w-full rounded-xl bg-white/[0.03] border border-white/10 px-4 py-3 text-white focus:outline-none focus:border-white/30 appearance-none [&>option]:bg-[#0A0A0A]">
+                        <option value="pending" @selected($status==='pending')>Pending</option>
+                        <option value="in progress" @selected($status==='in progress')>In Progress</option>
+                        <option value="completed" @selected($status==='completed')>Completed</option>
+                    </select>
+                </div>
+
+                {{-- Description --}}
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-2">Description</label>
+                    <textarea name="description" rows="4"
+                        class="w-full rounded-xl bg-white/[0.03] border border-white/10 px-4 py-3 text-white">{{ $idea->description }}</textarea>
+                </div>
+
+                {{-- ================= LINKS ================= --}}
+<div>
+    <label class="block text-xs font-semibold text-gray-500 uppercase mb-3">
+        Links
+    </label>
+
+    <div id="editLinksContainer" class="space-y-3">
+
+        @php
+            $links = $idea->links ?? [];
+        @endphp
+
+        @forelse($links as $index => $link)
+            <div class="flex gap-2 edit-link-row">
+                <input type="url"
+                       name="links[]"
+                       value="{{ $link }}"
+                       placeholder="https://example.com"
+                       class="flex-1 rounded-xl bg-white/[0.03] border border-white/10 px-4 py-3 text-white">
+
+                <button type="button"
+                        onclick="removeEditLink(this)"
+                        class="px-3 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500/30">
+                    ✕
+                </button>
+            </div>
+        @empty
+            {{-- empty state --}}
+            <div class="flex gap-2 edit-link-row">
+                <input type="url"
+                       name="links[]"
+                       placeholder="https://example.com"
+                       class="flex-1 rounded-xl bg-white/[0.03] border border-white/10 px-4 py-3 text-white">
+
+                <button type="button"
+                        onclick="removeEditLink(this)"
+                        class="px-3 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500/30">
+                    ✕
+                </button>
+            </div>
+        @endforelse
+
+    </div>
+
+    <button type="button"
+            onclick="addEditLink()"
+            class="mt-3 text-sm text-gray-400 hover:text-white">
+        + Add another link
+    </button>
+</div>
+<div class="mt-4">
+    <label class="text-sm text-gray-300">Steps</label>
+
+    <div id="editStepsContainer" class="space-y-2 mt-2">
+        @foreach($idea->steps as $index => $step)
+<div class="flex gap-2 step-row">
+
+    <input type="hidden"
+           name="steps[{{ $index }}][id]"
+           value="{{ $step->id }}">
+
+    <input type="text"
+           name="steps[{{ $index }}][description]"
+           value="{{ $step->description }}"
+           class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/20 text-white">
+
+    <button type="button"
+            onclick="removeStep(this)"
+            class="px-3 py-2 bg-red-500 text-white rounded-lg">
+        ✕
+    </button>
+
+</div>
+@endforeach
+    </div>
+
+    <button type="button"
+            onclick="addStep()"
+            class="mt-2 text-sm text-yellow-400">
+        + Add Step
+    </button>
+</div>
+
+                {{-- IMAGE SECTION --}}
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-2">Image</label>
+
+                    <input type="file" name="image" id="editImageInput"
+                        accept="image/*"
+                        class="w-full rounded-xl bg-white/[0.03] border border-white/10 px-4 py-3 text-white">
+
+                    {{-- Hidden remove flag --}}
+                    <input type="hidden" name="remove_image" id="removeImageFlag" value="0">
+
+                    {{-- Current Image Preview --}}
+                    <div id="editImagePreviewWrapper"
+                         class="mt-4 {{ $idea->image ? '' : 'hidden' }} relative">
+
+                        <img id="editImagePreview"
+                             src="{{ $idea->image ? asset('storage/'.$idea->image) : '' }}"
+                             class="w-full h-48 object-cover rounded-xl border border-white/10">
+
+                        {{-- Remove button --}}
+                        <button type="button"
+                                onclick="removeExistingImage()"
+                                class="absolute top-2 right-2 bg-black/70 hover:bg-black text-white rounded-full w-8 h-8 flex items-center justify-center">
+                            ✕
+                        </button>
+                    </div>
+                </div>
+
+            </form>
+            @if ($errors->any())
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('editIdeaModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        });
+    </script>
+@endif
+        </div>
+
+        {{-- Footer --}}
+        <div class="p-8 pt-4 border-t border-white/5 flex justify-end gap-3">
+            <button type="button"
+                onclick="closeEditModal()"
+                class="px-5 py-2 rounded-xl text-gray-400 hover:text-white">
+                Cancel
+            </button>
+
+            <button type="submit"
+                form="editIdeaForm"
+                class="px-6 py-2 rounded-xl bg-white text-black font-bold hover:bg-gray-200">
+                Update Idea
+            </button>
+        </div>
+    </div>
+</div>
 
     {{-- ================= DELETE MODAL ================= --}}
     <div id="deleteModal"
@@ -193,7 +381,7 @@
             document.body.style.overflow = 'auto'; // Re-enable scroll
         }
 
-    document.querySelectorAll('.step-row').forEach(row => {
+    document.querySelectorAll('.view-step-row').forEach(row => {
         row.addEventListener('click', async function () {
             const stepId = this.dataset.stepId;
 
@@ -232,6 +420,113 @@
             }
         });
     });
+    function openEditModal() {
+    const modal = document.getElementById('editIdeaModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeEditModal() {
+    const modal = document.getElementById('editIdeaModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    document.body.style.overflow = 'auto';
+}
+
+// 🔥 remove existing image
+function removeExistingImage() {
+    document.getElementById('editImagePreviewWrapper').classList.add('hidden');
+    document.getElementById('removeImageFlag').value = '1';
+}
+
+// 🔥 preview new image
+document.getElementById('editImageInput')?.addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const wrapper = document.getElementById('editImagePreviewWrapper');
+        const img = document.getElementById('editImagePreview');
+
+        img.src = e.target.result;
+        wrapper.classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+});
+
+function addEditLink() {
+    const container = document.getElementById('editLinksContainer');
+
+    const row = document.createElement('div');
+    row.className = 'flex gap-2 edit-link-row';
+
+    row.innerHTML = `
+        <input type="url"
+               name="links[]"
+               placeholder="https://example.com"
+               class="flex-1 rounded-xl bg-white/[0.03] border border-white/10 px-4 py-3 text-white">
+
+        <button type="button"
+                onclick="removeEditLink(this)"
+                class="px-3 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500/30">
+            ✕
+        </button>
+    `;
+
+    container.appendChild(row);
+}
+
+
+function removeEditLink(button) {
+    const container = document.getElementById('editLinksContainer');
+    const rows = container.querySelectorAll('.edit-link-row');
+
+    // 🔥 keep at least one row
+    if (rows.length <= 1) {
+        rows[0].querySelector('input').value = '';
+        return;
+    }
+
+    button.parentElement.remove();
+}
+let stepIndex = {{ $idea->steps->count() }};
+
+function addStep() {
+    const container = document.getElementById('editStepsContainer');
+
+    const html = `
+        <div class="flex gap-2 step-row">
+            <input type="text"
+                   name="steps[${stepIndex}][description]"
+                   placeholder="Enter step..."
+                   class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/20 text-white">
+
+            <button type="button"
+                    onclick="removeStep(this)"
+                    class="px-3 py-2 bg-red-500 text-white rounded-lg">
+                ✕
+            </button>
+        </div>
+    `;
+
+    container.insertAdjacentHTML('beforeend', html);
+    stepIndex++;
+}
+function removeStep(button) {
+    const container = document.getElementById('editStepsContainer');
+    const rows = container.querySelectorAll('.step-row');
+
+    // ✅ allow removing last row (FIX your previous bug)
+    button.closest('.step-row').remove();
+
+    // optional: keep one empty row if all removed
+    if (container.children.length === 0) {
+        addStep();
+    }
+}
+
 </script>
     
 

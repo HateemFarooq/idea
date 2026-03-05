@@ -24,56 +24,63 @@
         <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             
              @guest
-            <a href="{{ route('home') }}" class="flex items-center gap-2 group">
-                <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center group-hover:rotate-12 transition-transform duration-300">
-                    <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                </div>
-                <span class="text-xl font-extrabold tracking-tight text-white uppercase italic">Idea</span>
-            </a>
-            @endguest
+<a href="{{ route('home') }}" class="flex items-center gap-2 group">
+    <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center group-hover:rotate-12 transition-transform duration-300">
+        <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+    </div>
+    <span class="text-xl font-extrabold tracking-tight text-white uppercase italic">Idea</span>
+</a>
+
+<div class="flex items-center gap-8">
+    <div class="hidden md:flex items-center gap-6">
+        <a href="{{ route('login') }}" class="relative text-sm transition {{ $isActive('login') }}">
+            Login
+            {!! request()->routeIs('login') ? $activeDot : '' !!}
+        </a>
+    </div>
+
+    <div class="h-4 w-[1px] bg-white/10 hidden md:block"></div>
+
+    <a href="{{ route('register') }}"
+       class="px-5 py-2 rounded-full bg-white text-black hover:bg-gray-200 transition font-bold text-sm shadow-[0_0_20px_rgba(255,255,255,0.1)] active:scale-95">
+        Register
+    </a>
+</div>
+@endguest
 
              @auth
-            <a href="{{ route('ideas') }}" class="flex items-center gap-2 group">
-                <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center group-hover:rotate-12 transition-transform duration-300">
-                    <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                </div>
-                <span class="text-xl font-extrabold tracking-tight text-white uppercase italic">Idea</span>
-            </a>
-            @endauth
+<a href="{{ route('ideas') }}" class="flex items-center gap-2 group">
+    <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center group-hover:rotate-12 transition-transform duration-300">
+        <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+    </div>
+    <span class="text-xl font-extrabold tracking-tight text-white uppercase italic">Idea</span>
+</a>
 
-            <div class="flex items-center gap-8">
-                @guest
-                    <div class="hidden md:flex items-center gap-6">
-                        <a href="{{ route('login') }}" class="relative text-sm transition {{ $isActive('login') }}">
-                            Login
-                            {!! request()->routeIs('login') ? $activeDot : '' !!}
-                        </a>
-                    </div>
+<div class="flex items-center gap-6">
+    <span class="text-sm text-gray-500 italic">
+        Welcome, {{ auth()->user()->name }}
+    </span>
 
-                    <div class="h-4 w-[1px] bg-white/10 hidden md:block"></div>
+    <!-- Edit Profile Button -->
+    <a href="{{ route('profile.edit') }}"
+       class="px-4 py-1.5 rounded-full border border-white/20 text-white hover:bg-white hover:text-black transition font-medium text-xs uppercase tracking-widest">
+        Edit Profile
+    </a>
 
-                    <a href="{{ route('register') }}"
-                       class="px-5 py-2 rounded-full bg-white text-black hover:bg-gray-200 transition font-bold text-sm shadow-[0_0_20px_rgba(255,255,255,0.1)] active:scale-95">
-                        Register
-                    </a>
-                @endguest
+    <form method="POST" action="{{ route('logout') }}">
+        @csrf
+        <button class="px-4 py-1.5 rounded-full border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition font-medium text-xs uppercase tracking-widest">
+            Logout
+        </button>
+    </form>
+</div>
+@endauth
 
-                @auth
-                    <div class="flex items-center gap-6">
-                        <span class="text-sm text-gray-500 italic">Welcome, {{ auth()->user()->name }}</span>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button class="px-4 py-1.5 rounded-full border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition font-medium text-xs uppercase tracking-widest">
-                                Logout
-                            </button>
-                        </form>
-                    </div>
-                @endauth
-            </div>
+            
         </div>
     </nav>
 

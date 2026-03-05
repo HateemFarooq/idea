@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Enum;
 use App\Models\User;
 use App\Notifications\IdeaNotification;
+use Illuminate\Support\Facades\Storage;
 
 class IdeaController extends Controller
 {
@@ -112,25 +113,98 @@ class IdeaController extends Controller
             ->route('ideas')
             ->with('success', 'Idea created successfully.');
     }
+    public function update(Request $request, Idea $idea)
+{
+    abort_if($idea->user_id !== Auth::id(), 403);
+
+    $validated = $request->validate([
+        'title' => ['required', 'string', 'max:255'],
+        'status' => ['required', new Enum(IdeaStatus::class)],
+        'description' => ['nullable', 'string'],
+        'links' => ['nullable', 'array'],
+        'links.*' => ['nullable', 'url'],
+        'steps' => ['nullable', 'array'],
+'steps.*.id' => ['nullable', 'exists:steps,id'],
+'steps.*.description' => ['nullable', 'string', 'max:255'],
+        'image' => ['nullable', 'image', 'max:2048'],
+        'remove_image' => ['nullable', 'boolean'],
+    ]);
+
+    // ================= IMAGE =================
+    $imagePath = $idea->image;
+
+    if ($request->boolean('remove_image')) {
+        if ($idea->image && Storage::disk('public')->exists($idea->image)) {
+            Storage::disk('public')->delete($idea->image);
+        }
+        $imagePath = null;
+    }
+
+    if ($request->hasFile('image')) {
+        if ($idea->image && Storage::disk('public')->exists($idea->image)) {
+            Storage::disk('public')->delete($idea->image);
+        }
+        $imagePath = $request->file('image')->store('ideas', 'public');
+    }
+
+    // ================= UPDATE IDEA =================
+    $idea->update([
+        'title' => $validated['title'],
+        'status' => $validated['status'],
+        'description' => $validated['description'],
+        'links' => $validated['links'] ?? [],
+        'image' => $imagePath,
+    ]);
+
+    // ===============================
+// 🧠 SMART STEP SYNC (SENIOR)
+// ===============================
+
+$steps = $request->input('steps', []);
+
+// collect IDs coming from form
+$incomingIds = collect($steps)
+    ->pluck('id')
+    ->filter()
+    ->values()
+    ->all();
+
+// delete removed steps
+$idea->steps()
+    ->whereNotIn('id', $incomingIds)
+    ->delete();
+
+// process each step
+foreach ($steps as $stepData) {
+
+    $description = trim($stepData['description'] ?? '');
+
+    // skip empty rows
+    if ($description === '') {
+        continue;
+    }
+
+    // ================= UPDATE EXISTING =================
+    if (!empty($stepData['id'])) {
+
+        $idea->steps()
+            ->where('id', $stepData['id'])
+            ->update([
+                'description' => $description,
+            ]);
+
+    }
+    // ================= CREATE NEW =================
+    else {
+
+        $idea->steps()->create([
+            'description' => $description,
+            'completed' => false,
+        ]);
+    }
 }
 
-// <!-- <?php
+    return back()->with('success', 'Idea updated successfully.');
+}
+}
 
-// namespace App\Http\Controllers;
-
-// use Illuminate\Http\Request;
-// use Illuminate\Support\Facades\Auth;
-// use App\Models\Idea;
-
-// class IdeaController extends Controller
-// {
-//     public function index()
-//     {
-//         // Get only logged-in user's ideas (latest first)
-//         $ideas = Idea::where('user_id', Auth::id())
-//             ->latest()
-//             ->get();
-
-//         return view('Pages.ideas', compact('ideas'));
-//     }
-// } -->
