@@ -14,30 +14,31 @@ class AdminController extends Controller
     }
 
     public function login(Request $request)
-{
+    {
 
-    $credentials = $request->validate([
-    'email' => 'required|email',
-    'password' => 'required'
-],[
-    'email.required' => 'Email field is required',
-    'email.email' => 'Please enter a valid email',
-    'password.required' => 'Password field is required'
-]);
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ], [
+            'email.required' => 'Email field is required',
+            'email.email' => 'Please enter a valid email',
+            'password.required' => 'Password field is required',
+        ]);
 
-    if (Auth::guard('admin')->attempt($credentials)) {
+        if (Auth::guard('admin')->attempt($credentials)) {
 
-        $request->session()->regenerate();
+            $request->session()->regenerate();
 
-        return redirect()
-            ->route('admin.dashboard')
-            ->with('success', 'Login successfully');
+            return redirect()
+                ->route('admin.dashboard')
+                ->with('success', 'Login successfully');
+        }
+
+        return back()->withErrors([
+            'email' => 'Invalid credentials',
+        ]);
     }
 
-    return back()->withErrors([
-        'email' => 'Invalid credentials'
-    ]);
-}
     public function dashboard()
     {
         return Inertia::render('Dashboard');
@@ -51,6 +52,6 @@ class AdminController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('admin.login')
-        ->with('success', 'Logged out successfully');;
+            ->with('success', 'Logged out successfully');
     }
 }

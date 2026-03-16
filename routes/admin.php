@@ -1,9 +1,10 @@
 <?php
-use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminIdeaController;
 use App\Http\Controllers\AdminStepsController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -11,10 +12,9 @@ use App\Http\Controllers\AdminStepsController;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/admin/login', [AdminController::class,'loginPage'])->name('admin.login');
+Route::get('/admin/login', [AdminController::class, 'loginPage'])->name('admin.login');
 
-Route::post('/admin/login', [AdminController::class,'login'])->name('admin.login.submit');
-
+Route::post('/admin/login', [AdminController::class, 'login'])->name('admin.login.submit');
 
 /*
 |--------------------------------------------------------------------------
@@ -24,19 +24,25 @@ Route::post('/admin/login', [AdminController::class,'login'])->name('admin.login
 
 Route::middleware('admin')->group(function () {
 
-    Route::get('/admin/dashboard', [AdminController::class,'dashboard'])
+    Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])
         ->name('admin.dashboard');
 
-    Route::post('/admin/logout', [AdminController::class,'logout'])
+    Route::post('/admin/logout', [AdminController::class, 'logout'])
         ->name('admin.logout');
 
-    Route::get('/admin/users', [UserController::class,'index'])
+    Route::get('/admin/users', [UserController::class, 'index'])
         ->name('admin.users');
 
-    Route::get('/admin/ideas', [AdminIdeaController::class,'index'])
-        ->name('admin.ideas');   
+    Route::delete('/admin/users/{user}', [UserController::class, 'destroy'])
+        ->name('admin.users.delete');
 
-    Route::get('/admin/steps', [AdminStepsController::class,'index'])
-        ->name('admin.steps');   
+    Route::get('/admin/ideas', [AdminIdeaController::class, 'index'])
+        ->name('admin.ideas');
+
+    Route::delete('/admin/ideas/{idea}', [AdminIdeaController::class, 'destroy'])
+        ->name('admin.ideas.delete');
+
+    Route::get('/admin/steps', [AdminStepsController::class, 'index'])
+        ->name('admin.steps');
 
 });

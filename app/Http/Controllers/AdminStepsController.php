@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Step;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Models\Step;
 
 class AdminStepsController extends Controller
 {
@@ -16,10 +16,9 @@ class AdminStepsController extends Controller
             ->when($search, function ($query) use ($search) {
 
                 $query->where('description', 'LIKE', "%{$search}%")
-                
-                ->orWhereHas('idea', function ($q) use ($search) {
-                    $q->where('title', 'LIKE', "%{$search}%");
-                });
+                    ->orWhereHas('idea', function ($q) use ($search) {
+                        $q->where('title', 'LIKE', "%{$search}%");
+                    });
 
             })
             ->paginate(5)
@@ -27,7 +26,7 @@ class AdminStepsController extends Controller
 
         return Inertia::render('Steps', [
             'steps' => $steps,
-            'filters' => $request->only('search')
+            'filters' => $request->only('search'),
         ]);
     }
 }
