@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use App\Models\User;
 
 class ProfileController extends Controller
 {
@@ -17,22 +15,26 @@ class ProfileController extends Controller
     }
 
     public function update(Request $request)
-{
-    $user = Auth::user();
+    {
+        $user = Auth::user();
 
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,'.$user->id,
 
-        // always required
-        'current_password' => ['required', 'current_password'],
-    ]);
+            // always required
+            'current_password' => ['required', 'current_password'],
+        ]);
 
-    $user->name = $request->name;
-    $user->email = $request->email;
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email,
+        ]);
+        // $user->name = $request->name;
+        // $user->email = $request->email;
 
-    $user->save();
+        // $user->save();
 
-    return redirect()->route('ideas')->with('success', 'Profile updated successfully');
-}
+        return redirect()->route('ideas')->with('success', 'Profile updated successfully');
+    }
 }

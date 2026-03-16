@@ -40,7 +40,7 @@ class IdeaNotification extends Notification implements ShouldQueue
             ->subject('New Idea Created 🚀')
             ->greeting('Hello!')
             ->line('A new idea has been created.')
-            ->line('Idea Title: ' . $this->idea->title)
+            ->line('Idea Title: '.$this->idea->title)
             ->action('View Idea', route('ideas.show', $this->idea->id))
             ->line('Thank you for using our app!');
     }
