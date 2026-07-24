@@ -8,7 +8,7 @@ use App\Http\Controllers\LocationController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
-    Route::get('/home', [AuthController::class, 'index'])->name('home');
+    Route::get('/', [AuthController::class, 'index'])->name('home');
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('storelogin');
 
