@@ -137,10 +137,14 @@ function deleteIdea() {
                   <span v-else class="no-data">None</span>
                 </td>
                 <td>
-                  <button class="delete-btn" @click="openDeleteModal(idea)">
-                    🗑
-                  </button>
-                </td>
+  <button class="view-btn" @click="router.get(`/admin/ideas/${idea.id}/steps`)">
+    👁
+  </button>
+
+  <button class="delete-btn" @click="openDeleteModal(idea)">
+    🗑
+  </button>
+</td>
               </tr>
             </tbody>
           </table>
@@ -486,5 +490,17 @@ function deleteIdea() {
   background: #ef4444;
   color: white;
   border: none;
+}
+
+.view-btn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+  margin-right: 8px;
+}
+
+.view-btn:hover {
+  opacity: 0.7;
 }
 </style>

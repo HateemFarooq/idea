@@ -90,6 +90,11 @@
                         Edit Profile
                     </a>
 
+                    <a href="{{ route('location.edit') }}"
+                        class="px-4 py-1.5 rounded-full border border-white/20 text-white hover:bg-white hover:text-black transition font-medium text-xs uppercase tracking-widest">
+                        Edit Location
+                    </a>
+
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button

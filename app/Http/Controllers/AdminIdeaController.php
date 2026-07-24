@@ -32,4 +32,12 @@ class AdminIdeaController extends Controller
 
         return redirect()->back()->with('success', 'Idea deleted successfully');
     }
+    public function showSteps(Idea $idea)
+{
+    $idea->load('steps');
+
+    return Inertia::render('IdeaSteps', [
+        'idea' => $idea
+    ]);
+}
 }

@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\IdeaController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StepController;
+use App\Http\Controllers\LocationController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -24,5 +25,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/steps/{step}/toggle', [StepController::class, 'toggle'])->name('steps.toggle');
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/location', [LocationController::class, 'index'])->name('location.edit');
+    Route::put('/location', [LocationController::class, 'update'])->name('location.update');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
